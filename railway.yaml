@@ -1,0 +1,37 @@
+version: 1
+
+services:
+  web:
+    engine: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn backend.wsgi:application"
+    healthcheck:
+      path: /
+      port: 8000
+    env:
+      DATABASE_URL:
+        fromDatabase:
+          name: cricket-court-db
+          property: connectionString
+      SECRET_KEY:
+        sync: false
+      DEBUG:
+        value: "False"
+      ALLOWED_HOSTS:
+        value: "${{RAILWAY_PUBLIC_DOMAIN}},localhost,127.0.0.1"
+      FRONTEND_URL:
+        value: "https://your-frontend-domain.vercel.app"
+      FRONTEND_CONFIRM_URL:
+        value: "https://your-frontend-domain.vercel.app/confirm"
+      GOOGLE_CLIENT_ID:
+        sync: false
+      GOOGLE_CLIENT_SECRET:
+        sync: false
+      EMAIL_HOST_USER:
+        sync: false
+      EMAIL_HOST_PASSWORD:
+        sync: false
+
+databases:
+  - name: cricket-court-db
+    plan: free
