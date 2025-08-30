@@ -18,7 +18,7 @@ services:
       DEBUG:
         value: "False"
       ALLOWED_HOSTS:
-        value: "${{RAILWAY_PUBLIC_DOMAIN}},localhost,127.0.0.1"
+        value: "web-production-74c9c.up.railway.app,${{RAILWAY_PUBLIC_DOMAIN}},localhost,127.0.0.1"
       FRONTEND_URL:
         value: "https://cricket-zeta-hazel.vercel.app"
       FRONTEND_CONFIRM_URL:
