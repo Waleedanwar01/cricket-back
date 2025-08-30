@@ -2,18 +2,18 @@
 import os
 from pathlib import Path
 import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
 
-# SECURITY WARNING: don't run with debug turned on in production!s
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS += ['web-production-74c9c.up.railway.app']
-
 
 # Application definition
 INSTALLED_APPS = [
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'book',
     'tournament',
 ]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://cricket-zeta-hazel.vercel.app",
     "https://web-production-74c9c.up.railway.app",
@@ -67,9 +68,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# Database
-# Database
+# Database Configuration - FIXED
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
 # Default to SQLite for development safety
 DATABASES = {
     'default': {
@@ -86,9 +87,13 @@ if DATABASE_URL and DATABASE_URL.strip() and '://' in DATABASE_URL:
             conn_max_age=600,
             ssl_require=True
         )
+        print("Using PostgreSQL database from DATABASE_URL")
     except Exception as e:
         print(f"Error parsing DATABASE_URL: {e}")
         print("Falling back to SQLite")
+else:
+    print("DATABASE_URL not found or invalid. Using SQLite.")
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -125,15 +130,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "https://cricket-zeta-hazel.vercel.app",  # Your Vercel frontend URL
-    "https://web-production-74c9c.up.railway.app",  # Your Railway backend URL
+    "https://cricket-zeta-hazel.vercel.app",
+    "https://web-production-74c9c.up.railway.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-# Additional CORS settings for development
-CORS_ALLOW_ALL_ORIGINS = False  # Set to True only for development
-
+CORS_ALLOW_ALL_ORIGINS = False
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
