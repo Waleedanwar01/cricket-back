@@ -13,7 +13,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-ALLOWED_HOSTS += ['web-staging-cc40.up.railway.app']
+ALLOWED_HOSTS += [
+    'web-staging-cc40.up.railway.app',
+    'web-production-74c9c.up.railway.app',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -33,6 +36,7 @@ INSTALLED_APPS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://cricket-zeta-hazel.vercel.app",
+    "https://web-staging-cc40.up.railway.app",
     "https://web-production-74c9c.up.railway.app",
 ]
 
@@ -132,8 +136,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "https://cricket-zeta-hazel.vercel.app",
     "https://web-staging-cc40.up.railway.app",
+    "https://web-production-74c9c.up.railway.app",
 ]
-
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = False
 
@@ -166,3 +170,7 @@ LOGGING = {
         },
     },
 }
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
