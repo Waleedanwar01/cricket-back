@@ -11,7 +11,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!s
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,web-production-74c9c.up.railway.app').split(',')
+
 
 # Application definition
 INSTALLED_APPS = [
