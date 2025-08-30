@@ -131,7 +131,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://cricket-zeta-hazel.vercel.app",
-    "https://web-production-74c9c.up.railway.app",
+    "https://web-staging-cc40.up.railway.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
