@@ -63,24 +63,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL and DATABASE_URL.strip() and "://" in DATABASE_URL:
-    try:
-        DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL)
-        }
-    except Exception as e:
-        print(f"Error parsing DATABASE_URL: {e}")
-        print(f"DATABASE_URL value: {repr(DATABASE_URL)}")
-        # Fallback to SQLite
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True  # ensures SSL for PostgreSQL
+        )
+    }
 else:
-    print(f"DATABASE_URL not set or invalid. Value: {repr(DATABASE_URL)}")
-    # Fallback to SQLite for local development
+    # Fallback for local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
