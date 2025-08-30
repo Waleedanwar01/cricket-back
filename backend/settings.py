@@ -70,29 +70,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
+# Default to SQLite for development safety
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
-if DATABASE_URL:
-    # Production - Use the DATABASE_URL from Railway environment variables
-    DATABASES = {
-        'default': dj_database_url.parse(
+# Only use DATABASE_URL if it exists and is valid
+if DATABASE_URL and DATABASE_URL.strip() and '://' in DATABASE_URL:
+    try:
+        DATABASES['default'] = dj_database_url.parse(
             DATABASE_URL, 
             conn_max_age=600,
             ssl_require=True
         )
-    }
-else:
-    # Local development - Use your local PostgreSQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'your_local_db_name',  # Replace with your actual DB name
-            'USER': 'your_postgres_username',  # Replace with your PostgreSQL username
-            'PASSWORD': 'your_password',  # Replace with your PostgreSQL password
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
-
+    except Exception as e:
+        print(f"Error parsing DATABASE_URL: {e}")
+        print("Falling back to SQLite")
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
