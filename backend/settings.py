@@ -30,6 +30,10 @@ INSTALLED_APPS = [
     'book',
     'tournament',
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://cricket-zeta-hazel.vercel.app",
+    "https://web-production-74c9c.up.railway.app",
+]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
