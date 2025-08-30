@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-ALLOWED_HOSTS += ['web-production-74c9c.up.railway.app']
+ALLOWED_HOSTS += ['web-staging-cc40.up.railway.app']
 
 # Application definition
 INSTALLED_APPS = [
@@ -71,6 +71,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database Configuration - FIXED
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# Handle Railway's shared variable format
+if DATABASE_URL == "$shared.DATABASE_URL":
+    # Try to get the actual value from shared variables
+    DATABASE_URL = os.environ.get("SHARED_DATABASE_URL") or os.environ.get("DATABASE_URL")
+
 # Default to SQLite for development safety
 DATABASES = {
     'default': {
@@ -80,7 +85,7 @@ DATABASES = {
 }
 
 # Only use DATABASE_URL if it exists and is valid
-if DATABASE_URL and DATABASE_URL.strip() and '://' in DATABASE_URL:
+if DATABASE_URL and DATABASE_URL.strip() and '://' in DATABASE_URL and DATABASE_URL != "$shared.DATABASE_URL":
     try:
         DATABASES['default'] = dj_database_url.parse(
             DATABASE_URL, 
@@ -93,7 +98,7 @@ if DATABASE_URL and DATABASE_URL.strip() and '://' in DATABASE_URL:
         print("Falling back to SQLite")
 else:
     print("DATABASE_URL not found or invalid. Using SQLite.")
-
+    print(f"DATABASE_URL value: {DATABASE_URL}")
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
