@@ -71,9 +71,27 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-}
+if DATABASE_URL:
+    # Production - Use the DATABASE_URL from Railway environment variables
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL, 
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    # Local development - Use your local PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'your_local_db_name',  # Replace with your actual DB name
+            'USER': 'your_postgres_username',  # Replace with your PostgreSQL username
+            'PASSWORD': 'your_password',  # Replace with your PostgreSQL password
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
