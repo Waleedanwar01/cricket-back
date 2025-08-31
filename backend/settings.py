@@ -88,14 +88,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database Configuration - FIXED
 # Database (production-safe, fail-fast)
 # Get the DATABASE_URL from Railway environment
-
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL not set!")
-
 DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.jqnnzdgbzkgycvitmzih',
+        'PASSWORD': '@Yellow007',
+        'HOST': 'aws-1-ap-southeast-1.pooler.supabase.com',
+        'PORT': '6543',
+    }
 }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
