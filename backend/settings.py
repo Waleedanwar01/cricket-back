@@ -204,3 +204,9 @@ SOCIAL_AUTH_NEW_USER_REDIRECT_URL = 'https://cricket-zeta-hazel.vercel.app/'  # 
 
 # For development, you might want to use:
 # LOGIN_REDIRECT_URL = 'http://localhost:3000/'
+
+# Trust X-Forwarded-Proto header from proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Redirect all HTTP to HTTPS
+SECURE_SSL_REDIRECT = True
