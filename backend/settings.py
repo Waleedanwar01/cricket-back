@@ -87,14 +87,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database Configuration - FIXED
 # Database (production-safe, fail-fast)
-DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+# Get the DATABASE_URL from Railway environment
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-print("DATABASE_URL =", DATABASE_URL)  # <- debug line
-
-if not DATABASE_URL or DATABASE_URL.startswith("$"):
+if not DATABASE_URL:
     raise RuntimeError(
-        "DATABASE_URL not found or not set correctly. "
-        "Set DATABASE_URL in Railway (service scope) to your postgres URL."
+        "DATABASE_URL not found. Make sure your Railway variable is set."
     )
 
 DATABASES = {
