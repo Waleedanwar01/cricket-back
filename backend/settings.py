@@ -88,12 +88,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database Configuration - FIXED
 # Database (production-safe, fail-fast)
 # Get the DATABASE_URL from Railway environment
-DATABASE_URL = os.environ.get("DATABASE_URL")
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL not found. Make sure your Railway variable is set."
-    )
+    raise RuntimeError("DATABASE_URL not set!")
 
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
