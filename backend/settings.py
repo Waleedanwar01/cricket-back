@@ -89,31 +89,26 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database (production-safe, fail-fast)
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
-# Agar placeholder mila toh ignore kar do
+# If Railway injected a literal pointer like "$shared.DATABASE_URL", treat it as not set
 if DATABASE_URL.startswith("$"):
     DATABASE_URL = ""
 
-if DATABASE_URL:
-    try:
-        DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-        }
-    except Exception as e:
-        print("Error parsing DATABASE_URL:", e, file=sys.stderr)
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / "db.sqlite3",
-            }
-        }
-else:
-    print("⚠️ Warning: DATABASE_URL not found, using SQLite fallback")
+if not DATABASE_URL:
+    # Fail fast in production so we don't silently use SQLite on the server
+    # (Locally you can set DATABASE_URL env var or allow sqlite fallback if you prefer)
+    raise RuntimeError(
+        "DATABASE_URL not found or not set correctly. "
+        "Set DATABASE_URL in Railway (service scope) to your postgres URL."
+    )
+
+try:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / "db.sqlite3",
-        }
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
+except Exception as e:
+    # surface the exact parse error in logs so you can fix the URL encoding/format
+    print("Error parsing DATABASE_URL:", e, file=sys.stderr)
+    raise
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
