@@ -1,4 +1,5 @@
 # backend/settings.py
+import sys
 import os
 from pathlib import Path
 import dj_database_url
@@ -13,7 +14,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS += [
     'web-staging-cc40.up.railway.app',
     'web-production-74c9c.up.railway.app',
@@ -33,13 +35,23 @@ INSTALLED_APPS = [
     'team',
     'book',
     'tournament',
+    'social_django',
+
 ]
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 
 CSRF_TRUSTED_ORIGINS = [
     "https://cricket-zeta-hazel.vercel.app",
     "https://web-staging-cc40.up.railway.app",
     "https://web-production-74c9c.up.railway.app",
 ]
+LOGIN_URL = '/accounts/login/google-oauth2/'
+LOGIN_REDIRECT_URL = '/'   # ya frontend ka URL
+LOGOUT_REDIRECT_URL = '/'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -75,7 +87,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database Configuration - FIXED
 # Database (production-safe, fail-fast)
-import sys
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 # If Railway injected a literal pointer like "$shared.DATABASE_URL", treat it as not set
