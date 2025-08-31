@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'book',
     'tournament',
     'social_django',
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
 
 ]
 AUTHENTICATION_BACKENDS = (
@@ -129,6 +130,16 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'accounts.pipeline.generate_jwt',  # 👈 add this
+)
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
