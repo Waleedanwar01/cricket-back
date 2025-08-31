@@ -89,17 +89,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database (production-safe, fail-fast)
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
-if DATABASE_URL.startswith("$"):
-    DATABASE_URL = ""
+print("DATABASE_URL =", DATABASE_URL)  # <- debug line
 
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-    }
-else:
+if not DATABASE_URL or DATABASE_URL.startswith("$"):
     raise RuntimeError(
-        "DATABASE_URL not found or not set correctly. Set DATABASE_URL in Railway (service scope) to your postgres URL."
+        "DATABASE_URL not found or not set correctly. "
+        "Set DATABASE_URL in Railway (service scope) to your postgres URL."
     )
+
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+}
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
