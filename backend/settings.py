@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import dj_database_url
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -113,6 +114,18 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Google Auth
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
+
+# Email Settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
