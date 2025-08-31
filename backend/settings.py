@@ -49,9 +49,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://web-staging-cc40.up.railway.app",
     "https://web-production-74c9c.up.railway.app",
 ]
-LOGIN_URL = '/accounts/login/google-oauth2/'
-LOGIN_REDIRECT_URL = '/'   # ya frontend ka URL
-LOGOUT_REDIRECT_URL = '/'
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -186,3 +184,23 @@ LOGGING = {
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'openid'
+]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
+
+# Social Auth Settings - CRITICAL FIX
+SOCIAL_AUTH_URL_NAMESPACE = 'social'  # This matches your namespace
+
+# These should point to your FRONTEND URLs, not backend
+LOGIN_REDIRECT_URL = 'https://cricket-zeta-hazel.vercel.app/'  # Frontend URL
+LOGOUT_REDIRECT_URL = 'https://cricket-zeta-hazel.vercel.app/'  # Frontend URL
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'https://cricket-zeta-hazel.vercel.app/'  # Frontend URL
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = 'https://cricket-zeta-hazel.vercel.app/'  # Frontend URL
+
+# For development, you might want to use:
+# LOGIN_REDIRECT_URL = 'http://localhost:3000/'
