@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'book',
     'tournament',
     'social_django',
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
+    
 
 ]
 AUTHENTICATION_BACKENDS = (
@@ -227,3 +227,9 @@ SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
