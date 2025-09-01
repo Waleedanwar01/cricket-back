@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-
+from django.conf import settings
 @csrf_exempt
 def contactUs(request):
     if request.method == "POST":
@@ -20,7 +20,7 @@ def contactUs(request):
             send_mail(
                 subject=f"New Contact Message from {name}",
                 message=message,
-                from_email=email,
+                from_email=settings.EMAIL_HOST_USER,
                 recipient_list=["waleeddogare@gmail.com"],
                 fail_silently=False,
             )

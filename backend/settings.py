@@ -117,13 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Google Auth
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-# Email Settings
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -142,7 +136,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',              # update user details
     'accounts.pipeline.generate_jwt',                      # your custom JWT
 )
-
+ 
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
