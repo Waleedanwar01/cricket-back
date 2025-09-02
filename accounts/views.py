@@ -30,7 +30,16 @@ def signup_api(request):
             return JsonResponse({"error": "Email already registered"}, status=400)
             
         user = User.objects.create_user(username=username, email=email, password=password)
-        return JsonResponse({"message": "User created successfully"})
+        
+        # Generate JWT tokens
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+        
+        return JsonResponse({
+            "message": "User created successfully",
+            "jwt_access": str(refresh.access_token),
+            "jwt_refresh": str(refresh)
+        })
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
@@ -62,12 +71,19 @@ def login_api(request):
         return JsonResponse({"error": "Invalid credentials"}, status=400)
     
     login(request, user)
+    
+    # Generate JWT tokens
+    from rest_framework_simplejwt.tokens import RefreshToken
+    refresh = RefreshToken.for_user(user)
+    
     return JsonResponse({
         "message": "Logged in successfully",
         "user": {
             "username": user.username,
             "email": user.email,
-        }
+        },
+        "jwt_access": str(refresh.access_token),
+        "jwt_refresh": str(refresh)
     }, status=200)
 
 @login_required

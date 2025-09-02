@@ -11,13 +11,13 @@ from .serializers import TournamentSerializer, TeamEntrySerializer
 from django.utils import timezone
 from datetime import date
 from django.db.models import Q
-from book.authentication import CsrfExemptSessionAuthentication
+from book.authentication import CsrfExemptSessionAuthentication, CustomJWTAuthentication
 
 HOURLY_RATE = 1800
  
 
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def create_tournament(request):
     serializer = TournamentSerializer(data=request.data)
@@ -52,7 +52,7 @@ def create_tournament(request):
 
 
 @api_view(['GET'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def my_tournaments(request):
     items = Tournament.objects.filter(holder=request.user).order_by('-created_at')
@@ -60,7 +60,7 @@ def my_tournaments(request):
 
 
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def admin_confirm_tournament(request, pk):
     # In a real app, restrict to admin/staff via IsAdminUser
@@ -97,7 +97,7 @@ def all_tournaments(request):
 
 
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def cancel_tournament(request, pk):
     try:
@@ -128,7 +128,7 @@ def cancel_tournament(request, pk):
 
 
 @api_view(['POST', 'OPTIONS'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def create_team_entry(request, tournament_id):
     try:
@@ -214,7 +214,7 @@ def create_team_entry(request, tournament_id):
 
 
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def cancel_team_entry(request, entry_id):
     try:
@@ -242,7 +242,7 @@ def cancel_team_entry(request, entry_id):
 
 
 @api_view(['GET'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def my_entries(request):
     entries = TeamEntry.objects.select_related('tournament').filter(captain=request.user).order_by('-created_at')
