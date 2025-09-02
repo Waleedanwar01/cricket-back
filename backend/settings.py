@@ -63,7 +63,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.common.CommonMiddleware',  # Add again to ensure proper CORS handling
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -150,13 +149,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email settings
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.brevo.com")
-EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="960890001@smtp-brevo.com")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="960890001@smtp-brevo.com")
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Use console backend for development
+# Uncomment these settings when you have proper SMTP credentials
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.brevo.com")
+# EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+# EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="your-email@example.com")
+# EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+# EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+# DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="your-email@example.com")
 
 # Logging configuration
 LOGGING = {
@@ -225,6 +226,23 @@ CORS_ALLOWED_ORIGINS = [
 # Add CORS_ORIGIN_WHITELIST as a backup
 CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS
 
+# Additional CORS headers for better cross-origin support
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "access-control-allow-origin",
+    "access-control-allow-credentials",
+    "access-control-allow-headers",
+    "access-control-allow-methods"
+]
+
 # Allow all methods
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -252,6 +270,11 @@ CORS_ALLOW_HEADERS = [
 CORS_EXPOSE_HEADERS = [
     "access-control-allow-origin",
     "access-control-allow-credentials",
+    "access-control-allow-headers",
+    "access-control-allow-methods",
+    "content-type",
+    "authorization",
+    "x-csrftoken",
 ]
 
 # REST Framework settings
