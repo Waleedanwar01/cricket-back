@@ -5,21 +5,29 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.permissions import IsAdminUser
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Tournament, TeamEntry
 from .serializers import TournamentSerializer, TeamEntrySerializer
 from django.utils import timezone
 from datetime import date
 from django.db.models import Q
-from book.authentication import CsrfExemptSessionAuthentication, CustomJWTAuthentication
+from book.authentication import CsrfExemptSessionAuthentication
 
 HOURLY_RATE = 1800
- 
 
 @api_view(['POST'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def create_tournament(request):
+    # Debug logs
+    print("User:", request.user)
+    print("Authenticated:", request.user.is_authenticated)
+    print("Auth headers:", request.META.get('HTTP_AUTHORIZATION'))
+    
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+    
     serializer = TournamentSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -52,26 +60,31 @@ def create_tournament(request):
 
 
 @api_view(['GET'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def my_tournaments(request):
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
     items = Tournament.objects.filter(holder=request.user).order_by('-created_at')
     return Response(TournamentSerializer(items, many=True).data)
 
 
 @api_view(['POST'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
-@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
+@permission_classes([IsAdminUser])
 def admin_confirm_tournament(request, pk):
-    # In a real app, restrict to admin/staff via IsAdminUser
-    if not request.user.is_staff:
-        return Response({"error": "Admin only"}, status=403)
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
     try:
         t = Tournament.objects.get(pk=pk)
     except Tournament.DoesNotExist:
         return Response({"error": "Not found"}, status=404)
+        
     t.status = 'confirmed'
     t.save(update_fields=['status', 'updated_at'])
+    
     # Email holder
     send_mail(
         "Tournament Confirmed",
@@ -80,6 +93,7 @@ def admin_confirm_tournament(request, pk):
         [t.holder.email],
         fail_silently=False,
     )
+    
     return Response({"message": "Tournament confirmed"})
 
 
@@ -97,9 +111,12 @@ def all_tournaments(request):
 
 
 @api_view(['POST'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def cancel_tournament(request, pk):
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
     try:
         t = Tournament.objects.get(pk=pk)
     except Tournament.DoesNotExist:
@@ -128,9 +145,12 @@ def cancel_tournament(request, pk):
 
 
 @api_view(['POST', 'OPTIONS'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def create_team_entry(request, tournament_id):
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
     try:
         t = Tournament.objects.get(pk=tournament_id)
     except Tournament.DoesNotExist:
@@ -214,9 +234,12 @@ def create_team_entry(request, tournament_id):
 
 
 @api_view(['POST'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def cancel_team_entry(request, entry_id):
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
     try:
         entry = TeamEntry.objects.select_related('tournament').get(pk=entry_id)
     except TeamEntry.DoesNotExist:
@@ -242,10 +265,11 @@ def cancel_team_entry(request, entry_id):
 
 
 @api_view(['GET'])
-@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([JWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def my_entries(request):
+    if not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
     entries = TeamEntry.objects.select_related('tournament').filter(captain=request.user).order_by('-created_at')
     return Response(TeamEntrySerializer(entries, many=True).data)
-
-
