@@ -2,10 +2,9 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timedelta
-import secrets, requests, json
+import secrets, requests
 from .models import Book
 from .serializers import BookSerializer
-from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
@@ -37,31 +36,85 @@ def send_brevo_email(to_email, subject, html_content, text_content=None):
     return response.json()
 
 
-def check_booking_availability(date, start_time, hours):
-    start_hour = start_time.hour
-    requested_slots = []
+def styled_email_template(title, message, button_text=None, button_url=None, details=None, footer_text=None):
+    """Reusable styled HTML email template"""
+    details_html = ""
+    if details:
+        details_html = "<div class='details'>" + "".join(
+            [f"<p><strong>{k}:</strong> {v}</p>" for k, v in details.items()]
+        ) + "</div>"
 
-    for h in range(hours):
-        slot_hour = (start_hour + h) % 24
-        requested_slots.append(f"{slot_hour:02d}:00")
+    button_html = ""
+    if button_text and button_url:
+        button_html = f"""
+        <a href="{button_url}" class="btn">{button_text}</a>
+        """
 
-    existing_bookings = Book.objects.filter(date=date).exclude(status="cancelled")
-    conflicting_slots = []
-
-    for booking in existing_bookings:
-        booking_start = booking.time.hour
-        booking_end = (booking_start + booking.hours) % 24
-
-        for slot in requested_slots:
-            slot_hour = int(slot.split(':')[0])
-            if booking_start < booking_end:
-                if booking_start <= slot_hour < booking_end:
-                    conflicting_slots.append(slot)
-            else:
-                if slot_hour >= booking_start or slot_hour < booking_end:
-                    conflicting_slots.append(slot)
-
-    return conflicting_slots
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>{title}</title>
+      <style>
+        body {{
+          font-family: Arial, sans-serif;
+          background-color: #f8f9fa;
+          margin: 0;
+          padding: 0;
+        }}
+        .container {{
+          max-width: 600px;
+          margin: 20px auto;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          padding: 20px;
+        }}
+        h2 {{
+          color: #2c3e50;
+          text-align: center;
+        }}
+        p {{
+          color: #555;
+          line-height: 1.5;
+        }}
+        .details {{
+          margin: 20px 0;
+          padding: 15px;
+          background: #f4f6f8;
+          border-radius: 8px;
+        }}
+        .btn {{
+          display: inline-block;
+          background: #28a745;
+          color: #fff !important;
+          text-decoration: none;
+          padding: 12px 20px;
+          border-radius: 6px;
+          font-weight: bold;
+          text-align: center;
+          margin: 20px 0;
+        }}
+        .footer {{
+          font-size: 12px;
+          color: #aaa;
+          text-align: center;
+          margin-top: 20px;
+        }}
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2>{title}</h2>
+        <p>{message}</p>
+        {button_html}
+        {details_html}
+        <div class="footer">{footer_text or f"&copy; {datetime.now().year} Cricket Court"}</div>
+      </div>
+    </body>
+    </html>
+    """
 
 
 @api_view(['POST'])
@@ -83,44 +136,58 @@ def bookCourt(request):
     date_str = booking.date.strftime("%d %b %Y")
     start_str = start_dt.strftime("%I:%M %p")
     end_str = end_dt.strftime("%I:%M %p")
-    price_str = f"₨{PRICE_PER_HOUR:,} / hour"
     total_str = f"₨{total_price:,}"
 
     # --- Customer email
     subject = "Confirm Your Booking"
-    text_message = f"""Dear {booking.name},
+    confirm_url = f"{settings.FRONTEND_CONFIRM_URL}?id={booking.id}&token={booking.confirmation_token}"
+
+    text_message = f"""
+Dear {booking.name},
 
 Thank you for your booking. Please confirm your booking using the link below:
 
-Confirm Link:
-{settings.FRONTEND_CONFIRM_URL}?id={booking.id}&token={booking.confirmation_token}
+{confirm_url}
 
 Booking Details:
 Date: {date_str}
-Start: {start_str}
-End: {end_str}
+Time: {start_str} - {end_str}
 Duration: {booking.hours} hour(s)
 Total: {total_str}
 """
 
-    html_message = f"""
-    <html><body>
-      <h2>Confirm Your Booking</h2>
-      <p>Dear {booking.name},</p>
-      <p>Click below to confirm your booking:</p>
-      <a href="{settings.FRONTEND_CONFIRM_URL}?id={booking.id}&token={booking.confirmation_token}">
-        Confirm Booking
-      </a>
-      <p>Date: {date_str}<br>
-      Time: {start_str} - {end_str}<br>
-      Total: {total_str}</p>
-    </body></html>
-    """
+    html_message = styled_email_template(
+        title="Confirm Your Booking",
+        message=f"Dear {booking.name},<br>Thank you for your booking. Please confirm your booking below.",
+        button_text="Confirm Booking",
+        button_url=confirm_url,
+        details={
+            "Date": date_str,
+            "Time": f"{start_str} - {end_str}",
+            "Duration": f"{booking.hours} hour(s)",
+            "Total": total_str,
+        }
+    )
 
     send_brevo_email(booking.email, subject, html_message, text_message)
 
     # --- Admin email
     admin_subject = f"New Booking Pending Confirmation - {booking.name}"
+
+    admin_html = styled_email_template(
+        title="New Booking Alert",
+        message=f"A new booking has been made by <b>{booking.name}</b>. Pending confirmation.",
+        details={
+            "Name": booking.name,
+            "Email": booking.email,
+            "Phone": booking.phone,
+            "Date": date_str,
+            "Time": f"{start_str} - {end_str}",
+            "Duration": f"{booking.hours} hour(s)",
+            "Total": total_str,
+        }
+    )
+
     admin_text = f"""
 New Booking Alert!
 
@@ -128,24 +195,10 @@ Name: {booking.name}
 Email: {booking.email}
 Phone: {booking.phone}
 Date: {date_str}
-Start: {start_str}
-End: {end_str}
+Time: {start_str} - {end_str}
 Duration: {booking.hours} hour(s)
 Total: {total_str}
 """
-
-    admin_html = f"""
-    <html><body>
-      <h2>New Booking Alert</h2>
-      <p><strong>Name:</strong> {booking.name}<br>
-      <strong>Email:</strong> {booking.email}<br>
-      <strong>Phone:</strong> {booking.phone}</p>
-      <p><strong>Date:</strong> {date_str}<br>
-      <strong>Start:</strong> {start_str}<br>
-      <strong>End:</strong> {end_str}<br>
-      <strong>Total:</strong> {total_str}</p>
-    </body></html>
-    """
 
     send_brevo_email(settings.ADMIN_EMAIL, admin_subject, admin_html, admin_text)
 
@@ -232,14 +285,32 @@ def cancel_booking(request, pk):
     # --- User cancel email
     user_subject = "Booking Cancelled"
     user_text = f"Dear {booking.name}, your booking on {date_str} at {start_str} has been cancelled."
-    user_html = f"<p>Dear {booking.name},<br>Your booking on {date_str} at {start_str} has been cancelled.<br>Total: {total_str}</p>"
+
+    user_html = styled_email_template(
+        title="Booking Cancelled",
+        message=f"Dear {booking.name},<br>Your booking has been cancelled.",
+        details={
+            "Date": date_str,
+            "Time": start_str,
+            "Total Refund": total_str,
+        }
+    )
 
     send_brevo_email(booking.email, user_subject, user_html, user_text)
 
     # --- Admin cancel email
     admin_subject = f"Booking Cancelled - {booking.name}"
     admin_text = f"Booking cancelled by {booking.name}, Date: {date_str}, Start: {start_str}"
-    admin_html = f"<p>Booking cancelled by <b>{booking.name}</b> on {date_str} at {start_str}</p>"
+
+    admin_html = styled_email_template(
+        title="Booking Cancelled",
+        message=f"Booking cancelled by <b>{booking.name}</b>.",
+        details={
+            "Date": date_str,
+            "Time": start_str,
+            "Total Refund": total_str,
+        }
+    )
 
     send_brevo_email(settings.ADMIN_EMAIL, admin_subject, admin_html, admin_text)
 
