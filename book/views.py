@@ -10,7 +10,7 @@ from datetime import timedelta, datetime, time as dt_time
 from django.contrib.auth.decorators import login_required
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
-from .authentication import CsrfExemptSessionAuthentication
+from .authentication import CsrfExemptSessionAuthentication, CustomJWTAuthentication
 from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -53,7 +53,7 @@ def check_booking_availability(date, start_time, hours):
     return conflicting_slots
 
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def bookCourt(request):
     serializer = BookSerializer(data=request.data)
@@ -280,6 +280,8 @@ Cricket Court System
 
 @csrf_exempt
 @api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
+@permission_classes([IsAuthenticated])
 def get_booked_slots(request):
     date = request.GET.get('date')
     if not date:
@@ -298,6 +300,7 @@ def get_booked_slots(request):
 
 
 @api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 def confirm_booking(request, booking_id, token):
     booking = get_object_or_404(Book, pk=booking_id)
     if booking.confirmation_token != token:
@@ -318,7 +321,7 @@ def confirm_booking(request, booking_id, token):
 
 
 @api_view(['GET'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def my_bookings(request):
     """List all bookings for the logged-in user"""
@@ -328,7 +331,7 @@ def my_bookings(request):
 
 
 @api_view(['POST'])
-@authentication_classes([CsrfExemptSessionAuthentication])
+@authentication_classes([CustomJWTAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, pk):
     """Allow a user to cancel their future booking"""

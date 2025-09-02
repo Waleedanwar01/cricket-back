@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.CommonMiddleware',  # Add again to ensure proper CORS handling
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -133,7 +134,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
-    'accounts.pipeline.generate_jwt',
+    'accounts.pipeline.get_jwt_tokens_for_redirect',
 )
 
 # Static files (CSS, JavaScript, Images)
@@ -209,7 +210,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Redirect all HTTP to HTTPS
 SECURE_SSL_REDIRECT = True
 
-# CORS settings - FIXED
+# CORS settings - Updated to fix CORS issues
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = False  # Set to False for better security
 
@@ -221,6 +222,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://web-production-74c9c.up.railway.app",
 ]
 
+# Add CORS_ORIGIN_WHITELIST as a backup
+CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS
+
 # Allow all methods
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -231,7 +235,7 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-# Allow headers
+# Allow all headers
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -244,14 +248,25 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+# Expose all headers
+CORS_EXPOSE_HEADERS = [
+    "access-control-allow-origin",
+    "access-control-allow-credentials",
+]
+
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
 }
 
 # For preflight requests
