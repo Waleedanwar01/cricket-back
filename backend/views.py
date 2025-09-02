@@ -9,7 +9,7 @@ BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 def send_brevo_email(to_email, subject, html_content, text_content=None):
     headers = {
         "accept": "application/json",
-        "api-key": settings.BREVO_API_KEY,  # Make sure this is set in your settings
+        "api-key": settings.BREVO_API_KEY,
         "content-type": "application/json",
     }
     payload = {
@@ -20,41 +20,38 @@ def send_brevo_email(to_email, subject, html_content, text_content=None):
         "textContent": text_content or subject,
     }
     response = requests.post(BREVO_API_URL, headers=headers, json=payload)
-    response.raise_for_status()  # Will raise an error if API fails
+    response.raise_for_status()  # Raise error if API fails
     return response.json()
 
 
 @csrf_exempt
 def contactUs(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            name = data.get("name")
-            email = data.get("email")
-            message = data.get("message")
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=405)
 
-            # Check if any field is missing
-            if not name or not email or not message:
-                return JsonResponse({"error": "All fields are required!"}, status=400)
+    try:
+        data = json.loads(request.body)
+        name = data.get("name")
+        email = data.get("email")
+        message = data.get("message")
 
-            subject = f"New Contact Message from {name}"
-            html_content = f"""
-                <p><strong>From:</strong> {name} ({email})</p>
-                <p><strong>Message:</strong></p>
-                <p>{message}</p>
-            """
+        if not name or not email or not message:
+            return JsonResponse({"error": "All fields are required!"}, status=400)
 
-            # Send email using Brevo
-            send_brevo_email(settings.ADMIN_EMAIL, subject, html_content, message)
+        subject = f"New Contact Message from {name}"
+        html_content = f"""
+            <p><strong>From:</strong> {name} ({email})</p>
+            <p><strong>Message:</strong></p>
+            <p>{message}</p>
+        """
 
-            return JsonResponse({"message": "Message sent successfully!"})
+        send_brevo_email(settings.ADMIN_EMAIL, subject, html_content, message)
 
-        except requests.exceptions.RequestException as e:
-            print("Brevo API error:", e)
-            return JsonResponse({"error": "Failed to send email via Brevo"}, status=500)
+        return JsonResponse({"message": "Message sent successfully!"})
 
-        except Exception as e:
-            print("Unexpected error:", e)
-            return JsonResponse({"error": "Failed to send email"}, status=500)
-
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+    except requests.exceptions.RequestException as e:
+        print("Brevo API error:", e)
+        return JsonResponse({"error": "Failed to send email via Brevo"}, status=500)
+    except Exception as e:
+        print("Unexpected error:", e)
+        return JsonResponse({"error": "Failed to send email"}, status=500)

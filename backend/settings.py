@@ -154,7 +154,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Use console 
 
 # For production, use the following settings with proper SMTP credentials
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="your-email@example.com")
-
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+ADMIN_EMAIL = env("ADMIN_EMAIL")
+BREVO_API_KEY = env("BREVO_API_KEY")
 # SMTP settings are commented out to prevent connection errors
 # When you're ready to use SMTP, uncomment these settings and ensure proper credentials
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
