@@ -168,7 +168,7 @@ Your Company Team
     send_mail(
         subject=subject,
         message=text_message,
-        from_email="waleeddogare@gmail.com",
+        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[booking.email],
         html_message=html_message,
         fail_silently=False,
@@ -259,7 +259,7 @@ Cricket Court System
     send_mail(
         subject=admin_subject,
         message=admin_text_message,
-        from_email="waleeddogare@gmail.com",
+        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[settings.ADMIN_EMAIL],  # Admin email from settings
         html_message=admin_html_message,
         fail_silently=False,
@@ -388,7 +388,7 @@ def cancel_booking(request, pk):
     send_mail(
         subject=user_subject,
         message=user_text,
-        from_email="waleeddogare@gmail.com",
+        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[booking.email],
         html_message=user_html,
         fail_silently=False,
@@ -426,7 +426,7 @@ def cancel_booking(request, pk):
     send_mail(
         subject=admin_subject,
         message=admin_text,
-        from_email="waleeddogare@gmail.com",
+        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[settings.ADMIN_EMAIL],
         html_message=admin_html,
         fail_silently=False,
