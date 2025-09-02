@@ -23,7 +23,8 @@ ALLOWED_HOSTS += [
     'web-production-74c9c.up.railway.app',
     'cricket-zeta-hazel.vercel.app',  # Add your frontend domain here
 ]
-
+FRONTEND_CONFIRM_URL = env("FRONTEND_CONFIRM_URL", default="http://localhost:3000")
+ADMIN_EMAIL = env("ADMIN_EMAIL", default="your-admin-email@example.com")
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
